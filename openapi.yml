@@ -1,0 +1,124 @@
+openapi: 3.0.0
+info:
+  description: OpenAPI
+  title: Supermock API
+  version: 1.0.0
+servers:
+  - url: https://localhost:8000
+paths:
+  /_requests/{test_id}:
+    get:
+      summary: Get requests for test
+      parameters:
+        - name: test_id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 194a0bde-d70f-4b16-a303-1ffa2a77c143
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requests:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/main.Request'
+  /_responses:
+    post:
+      summary: Put response
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/main.Response'
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              example: '{}'
+        "400":
+          description: ""
+          content:
+            application/json:
+              example: '{"message": "uuid=required,test_id=required,method=required,path=required,status=required"}'
+  /_responses/{uuid}:
+    delete:
+      parameters:
+        - name: uuid
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 2b78ffe3-ce2b-46e3-ae71-6509e1613068
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              example: '{}'
+  /_tests/{test_id}:
+    delete:
+      summary: Delete all requests and responses by test id
+      parameters:
+        - name: test_id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: d3fb230c-c9d9-4e7a-b936-15b6c6c891aa
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              example: '{}'
+components:
+  schemas:
+    main.Request:
+      type: object
+      properties:
+        body:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        headers:
+          type: object
+          additionalProperties: {}
+        method:
+          type: string
+        path:
+          type: string
+        test_id:
+          type: string
+          format: uuid
+    main.Response:
+      type: object
+      properties:
+        body:
+          type: string
+        disable_catch:
+          type: boolean
+        headers:
+          type: object
+          additionalProperties: {}
+        is_permanent:
+          type: boolean
+        method:
+          type: string
+        path:
+          type: string
+        status:
+          type: integer
+        test_id:
+          type: string
+          format: uuid
+        uuid:
+          type: string
+          format: uuid
