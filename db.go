@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
+	"net/url"
 	"time"
 )
 
@@ -13,20 +14,35 @@ type DB struct {
 	sql *sql.DB
 }
 
-func NewDB(filename string) (*DB, error) {
-	db, err := sql.Open("sqlite3", fmt.Sprintf("file:%s?cache=shared", filename))
+func NewDB(dsn string) (*DB, error) {
+	parsedDSN, err := url.Parse(dsn)
 	if err != nil {
 		return nil, err
 	}
+
+	var db *sql.DB
+
+	if parsedDSN.Scheme == "sqlite3" || parsedDSN.Scheme == "sqlite" {
+		db, err = sql.Open("sqlite3", fmt.Sprintf("file:%s?cache=shared", parsedDSN.Host))
+		if err != nil {
+			return nil, err
+		}
+		db.SetMaxOpenConns(1)
+	} else if parsedDSN.Scheme == "postgres" {
+		db, err = sql.Open("postgres", dsn)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	err = db.Ping()
 	if err != nil {
 		return nil, err
 	}
 
-	db.SetMaxOpenConns(1)
 	_, err = db.Exec(`
 	CREATE TABLE IF NOT EXISTS requests (
-		id INTEGER PRIMARY KEY,
+		id SERIAL PRIMARY KEY,
 		test_id TEXT NOT NULL,
 		method TEXT NOT NULL,
 		path TEXT NOT NULL,
@@ -36,7 +52,7 @@ func NewDB(filename string) (*DB, error) {
 	);
 
 	CREATE TABLE IF NOT EXISTS responses (
-		id INTEGER PRIMARY KEY,
+		id SERIAL PRIMARY KEY,
 		uuid TEXT NOT NULL,
 		test_id TEXT NOT NULL,
 		method TEXT NOT NULL,

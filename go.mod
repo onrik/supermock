@@ -1,10 +1,11 @@
 module github.com/onrik/supermock
 
-go 1.21
+go 1.21.6
 
 require (
 	github.com/go-playground/validator/v10 v10.18.0
 	github.com/labstack/echo/v4 v4.11.4
+	github.com/lib/pq v1.10.9
 	github.com/mattn/go-sqlite3 v1.14.22
 	github.com/onrik/echo-slog v1.0.0
 )

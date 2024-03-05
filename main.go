@@ -8,13 +8,14 @@ import (
 	"strings"
 
 	"github.com/labstack/echo/v4"
+	_ "github.com/lib/pq"
 	_ "github.com/mattn/go-sqlite3"
 	echoslog "github.com/onrik/echo-slog"
 )
 
 func main() {
 	listen := flag.String("listen", "127.0.0.1:8000", "")
-	dbPath := flag.String("db", "db.sqlite3", "")
+	dbPath := flag.String("db", "sqlite://db.sqlite3", "")
 	debug := flag.Bool("debug", false, "")
 	flag.Parse()
 
