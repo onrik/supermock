@@ -27,7 +27,7 @@ paths:
                   requests:
                     type: array
                     items:
-                      $ref: '#/components/schemas/main.Request'
+                      $ref: '#/components/schemas/Request'
   /_responses:
     post:
       summary: Put response
@@ -35,7 +35,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/main.Response'
+              $ref: '#/components/schemas/Response'
       responses:
         "200":
           description: ""
@@ -80,7 +80,7 @@ paths:
               example: '{}'
 components:
   schemas:
-    main.Request:
+    Request:
       type: object
       properties:
         body:
@@ -98,7 +98,7 @@ components:
         test_id:
           type: string
           format: uuid
-    main.Response:
+    Response:
       type: object
       properties:
         body:

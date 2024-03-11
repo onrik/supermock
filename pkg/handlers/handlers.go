@@ -35,7 +35,7 @@ Requests
 @openapi GET /_requests/{test_id}
 @openapiParam test_id in=path, type=string, example=194a0bde-d70f-4b16-a303-1ffa2a77c143
 @openapiSummary Get requests for test
-@openapiResponse 200 application/json {"requests": []Request}
+@openapiResponse 200 application/json {"requests": []models.Request}
 */
 func (h *Handlers) Requests(c echo.Context) error {
 	testID := c.Param("test_id")
@@ -54,7 +54,7 @@ func (h *Handlers) Requests(c echo.Context) error {
 Responses save response
 @openapi POST /_responses
 @openapiSummary Put response
-@openapiRequest application/json Response
+@openapiRequest application/json models.Response
 @openapiResponse 400 application/json {"message": "uuid=required,test_id=required,method=required,path=required,status=required"}
 @openapiResponse 200 application/json {}
 */
