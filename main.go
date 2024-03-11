@@ -50,7 +50,13 @@ func main() {
 		},
 	})))
 
-	if err := app.Start(*listen, *dbPath); err != nil {
+	server, err := app.New(*listen, *dbPath)
+	if err != nil {
+		slog.Error(err.Error())
+		return
+	}
+
+	if err := server.Start(); err != nil {
 		slog.Error(err.Error())
 		os.Exit(1)
 	}

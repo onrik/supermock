@@ -1,8 +1,10 @@
 package app
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
+	"time"
 
 	"github.com/onrik/supermock/pkg/db"
 	"github.com/onrik/supermock/pkg/handlers"
@@ -10,15 +12,20 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func Start(addr, dbDSN string) error {
+type Supermock struct {
+	addr   string
+	db     *db.DB
+	server *echo.Echo
+}
+
+func New(addr, dbDSN string) (*Supermock, error) {
 	db, err := db.New(dbDSN)
 	if err != nil {
-		return fmt.Errorf("connect to db error: %w", err)
+		return nil, fmt.Errorf("connect to db error: %w", err)
 	}
 
-	defer db.Close()
-
 	h := handlers.New(db)
+
 	server := echo.New()
 	server.HideBanner = true
 	server.HidePort = true
@@ -30,9 +37,28 @@ func Start(addr, dbDSN string) error {
 	server.DELETE("/_tests/:test_id", h.Clean)
 	server.Any("/*", h.Catch)
 
-	slog.Info(fmt.Sprintf("Listen http://%s ...", addr))
-	if err := server.Start(addr); err != nil {
+	return &Supermock{
+		addr:   addr,
+		db:     db,
+		server: server,
+	}, nil
+}
+
+func (s *Supermock) Start() error {
+	slog.Info(fmt.Sprintf("Listen http://%s ...", s.addr))
+	if err := s.server.Start(s.addr); err != nil {
 		return err
 	}
 	return nil
+}
+
+func (s *Supermock) Stop() {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	err := s.server.Shutdown(ctx)
+	if err != nil {
+		slog.Error(err.Error())
+	}
+
+	s.db.Close()
 }
