@@ -7,7 +7,6 @@ require (
 	github.com/labstack/echo/v4 v4.11.4
 	github.com/lib/pq v1.10.9
 	github.com/mattn/go-sqlite3 v1.14.22
-	github.com/onrik/echo-slog v1.0.0
 )
 
 require (

@@ -1,4 +1,4 @@
-package main
+package models
 
 type Request struct {
 	TestID    string            `json:"test_id" openapi:"format=uuid"`

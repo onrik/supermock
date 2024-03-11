@@ -7,10 +7,10 @@ import (
 	"os"
 	"strings"
 
-	"github.com/labstack/echo/v4"
+	"github.com/onrik/supermock/pkg/app"
+
 	_ "github.com/lib/pq"
 	_ "github.com/mattn/go-sqlite3"
-	echoslog "github.com/onrik/echo-slog"
 )
 
 func main() {
@@ -50,30 +50,8 @@ func main() {
 		},
 	})))
 
-	db, err := NewDB(*dbPath)
-	if err != nil {
-		slog.Error("Open db error", "error", err)
-		return
-	}
-
-	defer db.Close()
-
-	h := Handlers{db}
-
-	server := echo.New()
-	server.HideBanner = true
-	server.HidePort = true
-	server.Validator = Validator{}
-	server.Use(echoslog.MiddlewareDefault())
-
-	server.POST("/_responses", h.Responses)
-	server.DELETE("/_responses/:uuid", h.DeleteResponse)
-	server.GET("/_requests/:test_id", h.Requests)
-	server.DELETE("/_tests/:test_id", h.Clean)
-	server.Any("/*", h.Catch)
-
-	slog.Info(fmt.Sprintf("Listen http://%s ...", *listen), "db", *dbPath)
-	if err := server.Start(*listen); err != nil {
+	if err := app.Start(*listen, *dbPath); err != nil {
 		slog.Error(err.Error())
+		os.Exit(1)
 	}
 }
