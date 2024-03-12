@@ -1,5 +1,5 @@
 PROJECT=supermock
-VERSION=1.3.0
+VERSION=1.4.0
 
 .PHONY: openapi vendor
 
@@ -14,3 +14,6 @@ push:
 	docker tag $(PROJECT):$(VERSION) onrik/$(PROJECT):latest
 	docker push onrik/$(PROJECT):$(VERSION)
 	docker push onrik/$(PROJECT):latest
+
+lint:
+	docker run --name $(PROJECT)-lint --rm -i -v "$(PWD):/src" -w /src golangci/golangci-lint:v1.56 golangci-lint run ./pkg/... -E gofmt -E bodyclose -E gosec -E goconst -E unparam -E unconvert -E asciicheck -E exportloopref -E nilerr --timeout=10m

@@ -8,9 +8,13 @@ import (
 
 	"github.com/onrik/supermock/pkg/db"
 	"github.com/onrik/supermock/pkg/handlers"
+	"github.com/onrik/supermock/pkg/models"
 
 	"github.com/labstack/echo/v4"
 )
+
+type Response = models.Response
+type Request = models.Request
 
 type Supermock struct {
 	addr   string
@@ -61,4 +65,12 @@ func (s *Supermock) Stop() {
 	}
 
 	s.db.Close()
+}
+
+func (s *Supermock) Put(ctx context.Context, response Response) error {
+	return s.db.SaveResponse(ctx, response)
+}
+
+func (s *Supermock) Get(ctx context.Context, testID string) ([]Request, error) {
+	return s.db.Requests(ctx, testID)
 }
