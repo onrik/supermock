@@ -12,6 +12,7 @@ package main
 
 import (
     "github.com/onrik/supermock/pkg/app"
+    _ "github.com/mattn/go-sqlite3"
 )
 
 func TestMain(t testing.T) {
