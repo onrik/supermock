@@ -16,6 +16,7 @@ import (
 func main() {
 	listen := flag.String("listen", "127.0.0.1:8000", "")
 	dbPath := flag.String("db", "sqlite://db.sqlite3", "")
+	templatesPath := flag.String("templates", "./templates", "")
 	debug := flag.Bool("debug", false, "")
 	flag.Parse()
 
@@ -50,13 +51,13 @@ func main() {
 		},
 	})))
 
-	server, err := app.New(*listen, *dbPath)
+	server, err := app.New(*listen, *dbPath, *templatesPath)
 	if err != nil {
 		slog.Error(err.Error())
 		return
 	}
 
-	if err := server.Start(); err != nil {
+	if err := server.Run(); err != nil {
 		slog.Error(err.Error())
 		os.Exit(1)
 	}

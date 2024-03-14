@@ -22,7 +22,7 @@ type Supermock struct {
 	server *echo.Echo
 }
 
-func New(addr, dbDSN string) (*Supermock, error) {
+func New(addr, dbDSN, templatesPath string) (*Supermock, error) {
 	db, err := db.New(dbDSN)
 	if err != nil {
 		return nil, fmt.Errorf("connect to db error: %w", err)
@@ -48,7 +48,15 @@ func New(addr, dbDSN string) (*Supermock, error) {
 	}, nil
 }
 
-func (s *Supermock) Start() error {
+func (s *Supermock) Start() {
+	go func() {
+		if err := s.Run(); err != nil {
+			panic(err)
+		}
+	}()
+}
+
+func (s *Supermock) Run() error {
 	slog.Info(fmt.Sprintf("Listen http://%s ...", s.addr))
 	if err := s.server.Start(s.addr); err != nil {
 		return err
