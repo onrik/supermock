@@ -75,8 +75,8 @@ func (s *Supermock) Stop() {
 	s.db.Close()
 }
 
-func (s *Supermock) Put(ctx context.Context, response Response) error {
-	return s.db.SaveResponse(ctx, response)
+func (s *Supermock) Put(ctx context.Context, responses ...Response) error {
+	return s.db.SaveResponses(ctx, responses...)
 }
 
 func (s *Supermock) Get(ctx context.Context, testID string) ([]Request, error) {

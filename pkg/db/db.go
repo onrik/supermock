@@ -125,6 +125,17 @@ func (db *DB) SaveResponse(ctx context.Context, response models.Response) error 
 	return err
 }
 
+func (db *DB) SaveResponses(ctx context.Context, responses ...models.Response) error {
+	for i := range responses {
+		err := db.SaveResponse(ctx, responses[i])
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (db *DB) SaveRequest(ctx context.Context, request models.Request) error {
 	headers, err := json.Marshal(request.Headers)
 	if err != nil {
