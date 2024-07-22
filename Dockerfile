@@ -8,4 +8,6 @@ FROM debian:bookworm-slim
 
 COPY --from=builder /tmp/supermock /usr/bin/supermock
 
-ENTRYPOINT ["supermock"]
+EXPOSE 8000
+
+ENTRYPOINT ["supermock", "-listen", "0.0.0.0:8000"]
