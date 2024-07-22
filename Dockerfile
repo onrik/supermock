@@ -2,7 +2,7 @@ FROM golang:1.22 as builder
 
 ADD ./ /src
 WORKDIR /src
-RUN go build -o /tmp/supermock
+RUN go build -o /tmp/supermock ./cmd/supermock
 
 FROM debian:bookworm-slim
 

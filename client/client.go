@@ -76,7 +76,7 @@ func (c *Client) Put(ctx context.Context, r Response) error {
 // Get requests by test id
 func (c *Client) Get(ctx context.Context, testID string) ([]Request, error) {
 	url := fmt.Sprintf("%s/_requests/%s", c.url, testID)
-	request, err := http.NewRequestWithContext(ctx, http.MethodDelete, url, nil)
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
 	}
