@@ -1,5 +1,5 @@
 PROJECT=supermock
-VERSION=1.6.0
+VERSION=1.6.1
 
 .PHONY: openapi vendor
 
