@@ -56,6 +56,12 @@ func (db *DB) Requests(ctx context.Context, testID string) ([]models.Request, er
 		if err != nil {
 			return nil, err
 		}
+
+		err = json.Unmarshal([]byte(headers), &request.Headers)
+		if err != nil {
+			return nil, err
+		}
+
 		requests = append(requests, request)
 	}
 
