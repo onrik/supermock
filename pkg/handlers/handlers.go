@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
@@ -14,8 +15,9 @@ import (
 type DB interface {
 	Requests(ctx context.Context, testID string) ([]models.Request, error)
 	Response(ctx context.Context, method, path string) (*models.Response, error)
-	DeleteResponse(ctx context.Context, uuid string) error
-	SaveResponse(ctx context.Context, response models.Response) error
+	Responses(ctx context.Context) ([]models.Response, error)
+	ResponseDelete(ctx context.Context, uuid string) error
+	ResponseSave(ctx context.Context, response models.Response) error
 	SaveRequest(ctx context.Context, request models.Request) error
 	Clean(ctx context.Context, testID string) error
 }
@@ -51,14 +53,14 @@ func (h *Handlers) Requests(c echo.Context) error {
 }
 
 /*
-Responses save response
+ResponseCreate save response
 @openapi POST /_responses
 @openapiSummary Put response
 @openapiRequest application/json models.Response
 @openapiResponse 400 application/json {"message": "uuid=required,test_id=required,method=required,path=required,status=required"}
 @openapiResponse 200 application/json {}
 */
-func (h *Handlers) Responses(c echo.Context) error {
+func (h *Handlers) ResponseCreate(c echo.Context) error {
 	response := models.Response{}
 	err := c.Bind(&response)
 	if err != nil {
@@ -69,20 +71,41 @@ func (h *Handlers) Responses(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 
-	slog.Debug("Save response",
-		"UUID", response.UUID,
-		"test_id", response.TestID,
-		"method", response.Method,
-		"path", response.Path,
-		"status", response.Status,
-	)
-	err = h.db.SaveResponse(c.Request().Context(), response)
+	err = h.db.ResponseSave(c.Request().Context(), response)
 	if err != nil {
 		slog.Error("Save response error", "error", err)
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 
+	slog.Debug("Response saved",
+		"id", response.ID,
+		"uuid", response.UUID,
+		"test_id", response.TestID,
+		"method", response.Method,
+		"path", response.Path,
+		"status", response.Status,
+		"headers", response.Headers,
+	)
+
 	return c.JSON(http.StatusOK, echo.Map{})
+}
+
+/*
+ResponsesList
+@openapi GET /_responses
+@openapiSummary Get responses
+@openapiResponse 200 application/json {"responses": []models.Response}
+*/
+func (h *Handlers) ResponseList(c echo.Context) error {
+	responses, err := h.db.Responses(c.Request().Context())
+	if err != nil {
+		slog.Error("Get responses error", "error", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
+
+	return c.JSON(http.StatusOK, echo.Map{
+		"responses": responses,
+	})
 }
 
 /*
@@ -93,12 +116,13 @@ DeleteResponse
 */
 func (h *Handlers) DeleteResponse(c echo.Context) error {
 	uuid := c.Param("uuid")
-	slog.Debug("Delete response", "uuid", uuid)
-	err := h.db.DeleteResponse(c.Request().Context(), uuid)
+	err := h.db.ResponseDelete(c.Request().Context(), uuid)
 	if err != nil {
 		slog.Error("Delete response error", "error", err, "uuid", uuid)
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
+
+	slog.Debug("Response deleted", "uuid", uuid)
 
 	return c.JSON(http.StatusOK, echo.Map{})
 }
@@ -112,12 +136,13 @@ Clean
 */
 func (h *Handlers) Clean(c echo.Context) error {
 	testID := c.Param("test_id")
-	slog.Debug("Clean test", "test_id", testID)
 	err := h.db.Clean(c.Request().Context(), testID)
 	if err != nil {
-		slog.Error("Clean error", "error", err)
+		slog.Error("Clean test error", "test_id", testID, "error", err)
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
+
+	slog.Info("Test cleaned", "test_id", testID)
 
 	return c.JSON(http.StatusOK, echo.Map{})
 }
@@ -125,6 +150,8 @@ func (h *Handlers) Clean(c echo.Context) error {
 func (h *Handlers) Catch(c echo.Context) error {
 	method := c.Request().Method
 	path := c.Request().URL.Path
+
+	slog.Debug(fmt.Sprintf("Request<- %s %s", method, path))
 
 	response, err := h.db.Response(c.Request().Context(), method, path)
 	if err != nil {
@@ -156,12 +183,13 @@ func (h *Handlers) Catch(c echo.Context) error {
 			request.Headers[k] = c.Request().Header.Get(k)
 		}
 
-		slog.Debug("Catch request", "method", method, "path", path)
 		err = h.db.SaveRequest(c.Request().Context(), request)
 		if err != nil {
 			slog.Error("Save request error", "error", err)
 			return echo.NewHTTPError(http.StatusInternalServerError, err)
 		}
+
+		slog.Info("Request saved", "method", method, "path", path, "test_id", request.TestID)
 	}
 
 	c.Response().Status = int(response.Status)
@@ -172,6 +200,8 @@ func (h *Handlers) Catch(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
+
+	slog.Debug(fmt.Sprintf("Response-> %s %s", method, path), "status", response.Status)
 
 	return nil
 }

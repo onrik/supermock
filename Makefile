@@ -1,10 +1,10 @@
 PROJECT=supermock
-VERSION=1.6.1
+VERSION=1.7.0
 
 .PHONY: openapi vendor
 
 openapi:
-	docker run --rm -i -v "$(PWD):/src" -w /src onrik/gaws:1.6.0 sh -c "gaws -t 'Supermock API' -path=/src > /src/openapi.yml"
+	docker run --rm -i -v "$(PWD):/src" -w /src onrik/gaws:1.10.0 sh -c "gaws -t 'Supermock API' -path=/src > /src/openapi.yml"
 
 build:
 	docker build -t $(PROJECT):$(VERSION) .

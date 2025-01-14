@@ -35,7 +35,8 @@ func New(addr, dbDSN, templatesPath string) (*Supermock, error) {
 	server.HidePort = true
 	server.Validator = Validator{}
 
-	server.POST("/_responses", h.Responses)
+	server.POST("/_responses", h.ResponseCreate)
+	server.GET("/_responses", h.ResponseList)
 	server.DELETE("/_responses/:uuid", h.DeleteResponse)
 	server.GET("/_requests/:test_id", h.Requests)
 	server.DELETE("/_tests/:test_id", h.Clean)
@@ -76,7 +77,7 @@ func (s *Supermock) Stop() {
 }
 
 func (s *Supermock) Put(ctx context.Context, responses ...Response) error {
-	return s.db.SaveResponses(ctx, responses...)
+	return s.db.ResponsesSave(ctx, responses...)
 }
 
 func (s *Supermock) Get(ctx context.Context, testID string) ([]Request, error) {
