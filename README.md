@@ -23,9 +23,11 @@ import (
 )
 
 func Test() {
-	mockClient := client.New("supermock:8000", nil)
+	mockClient := client.New("http://127.0.0.1:8000", nil)
 	ctx := context.Background()
-	testID := "Test"
+	testID := uuid.NewString()
+
+	defer mockClient.Clean(ctx, testID)
 	
 	// add response to mock 
 	_ = mockClient.Put(ctx, client.Response{
@@ -34,10 +36,10 @@ func Test() {
 		Method: http.MethodPost,
 		Path:   "/example",
 		Status: http.StatusOK,
+		Body: `{"foo": "bar"}`,
 		Headers: map[string]string{
 			"Content-Type": "application/json",
 		},
-		Body: `{"data":"test"}`,
 	})
 	
 	// do test stuff ....
@@ -61,7 +63,7 @@ import (
 )
 
 func TestMain(t testing.T) {
-    s, err := app.New("127.0.0.1:9000", "sqlite://:memory:")
+    s, err := app.New("127.0.0.1:9000", "sqlite://:memory:", "")
 
     s.Start()
     defer s.Stop()

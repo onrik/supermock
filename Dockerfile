@@ -10,4 +10,4 @@ COPY --from=builder /tmp/supermock /usr/bin/supermock
 
 EXPOSE 8000
 
-ENTRYPOINT ["supermock", "-listen", "0.0.0.0:8000"]
+ENTRYPOINT ["supermock"]

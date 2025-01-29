@@ -21,3 +21,13 @@ type Response struct {
 	IsPermanent  bool              `json:"is_permanent"`
 	DisableCatch bool              `json:"disable_catch"`
 }
+
+type Email struct {
+	From        string `json:"from"`
+	To          string `json:"to"`
+	Date        string `json:"date"`
+	Subject     string `json:"subject"`
+	ContentType string `json:"content_type"`
+	Body        string `json:"body"`
+	Raw         string `json:"raw"`
+}

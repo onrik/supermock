@@ -22,13 +22,20 @@ type DB interface {
 	Clean(ctx context.Context, testID string) error
 }
 
-type Handlers struct {
-	db DB
+type SMTP interface {
+	Emails() []models.Email
+	Purge()
 }
 
-func New(db DB) *Handlers {
+type Handlers struct {
+	db   DB
+	smtp SMTP
+}
+
+func New(db DB, smtp SMTP) *Handlers {
 	return &Handlers{
-		db: db,
+		db:   db,
+		smtp: smtp,
 	}
 }
 

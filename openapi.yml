@@ -6,6 +6,39 @@ info:
 servers:
 - url: https://localhost:8000
 paths:
+  /_emails:
+    delete:
+      summary: Delete all email messages
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              example: "{}"
+        "501":
+          description: ""
+          content:
+            application/json:
+              example: "{}"
+    get:
+      summary: Get email messages
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  emails:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Email"
+        "501":
+          description: ""
+          content:
+            application/json:
+              example: "{}"
   /_requests/{test_id}:
     get:
       summary: Get requests for test
@@ -94,6 +127,23 @@ paths:
               example: "{}"
 components:
   schemas:
+    Email:
+      type: object
+      properties:
+        body:
+          type: string
+        content_type:
+          type: string
+        date:
+          type: string
+        from:
+          type: string
+        raw:
+          type: string
+        subject:
+          type: string
+        to:
+          type: string
     Request:
       type: object
       properties:

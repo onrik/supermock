@@ -15,20 +15,23 @@ import (
 
 type Response = models.Response
 type Request = models.Request
+type Email = models.Email
 
 type Supermock struct {
-	addr   string
-	db     *db.DB
-	server *echo.Echo
+	httpAddr string
+	db       *db.DB
+	server   *echo.Echo
+	smtp     *SMTP
 }
 
-func New(addr, dbDSN, templatesPath string) (*Supermock, error) {
+func New(httpAddr, dbDSN, smtpAddr string) (*Supermock, error) {
 	db, err := db.New(dbDSN)
 	if err != nil {
 		return nil, fmt.Errorf("connect to db error: %w", err)
 	}
 
-	h := handlers.New(db)
+	smtp := newSMTP(smtpAddr)
+	h := handlers.New(db, smtp)
 
 	server := echo.New()
 	server.HideBanner = true
@@ -42,10 +45,16 @@ func New(addr, dbDSN, templatesPath string) (*Supermock, error) {
 	server.DELETE("/_tests/:test_id", h.Clean)
 	server.Any("/*", h.Catch)
 
+	if smtp != nil {
+		server.GET("/_emails", h.Emails)
+		server.DELETE("/_emails", h.EmailsDelete)
+	}
+
 	return &Supermock{
-		addr:   addr,
-		db:     db,
-		server: server,
+		httpAddr: httpAddr,
+		db:       db,
+		server:   server,
+		smtp:     smtp,
 	}, nil
 }
 
@@ -58,8 +67,14 @@ func (s *Supermock) Start() {
 }
 
 func (s *Supermock) Run() error {
-	slog.Info(fmt.Sprintf("Listen http://%s ...", s.addr))
-	if err := s.server.Start(s.addr); err != nil {
+	if s.smtp != nil {
+		if err := s.smtp.Start(); err != nil {
+			return err
+		}
+	}
+
+	slog.Info(fmt.Sprintf("Listen http://%s ...", s.httpAddr))
+	if err := s.server.Start(s.httpAddr); err != nil {
 		return err
 	}
 	return nil
@@ -68,6 +83,14 @@ func (s *Supermock) Run() error {
 func (s *Supermock) Stop() {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
+
+	if s.smtp != nil {
+		err := s.smtp.Stop()
+		if err != nil {
+			slog.Error(err.Error())
+		}
+	}
+
 	err := s.server.Shutdown(ctx)
 	if err != nil {
 		slog.Error(err.Error())

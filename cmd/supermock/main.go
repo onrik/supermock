@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"log/slog"
 	"os"
@@ -14,19 +13,14 @@ import (
 )
 
 func main() {
-	listen := flag.String("listen", "127.0.0.1:8000", "")
-	dbPath := flag.String("db", "sqlite://db.sqlite3", "")
-	templatesPath := flag.String("templates", "./templates", "")
-	debug := flag.Bool("debug", false, "")
-	flag.Parse()
-
-	logLevel := slog.LevelInfo
-	if debug != nil && *debug {
-		logLevel = slog.LevelDebug
+	config, err := readConfig()
+	if err != nil {
+		slog.Error(err.Error())
+		return
 	}
 
 	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{
-		Level:     logLevel,
+		Level:     config.slogLevel(),
 		AddSource: true,
 		ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
 			if a.Key != slog.SourceKey {
@@ -51,13 +45,13 @@ func main() {
 		},
 	})))
 
-	server, err := app.New(*listen, *dbPath, *templatesPath)
+	supermock, err := app.New(config.HttpAddr, config.DB, config.SmtpAddr)
 	if err != nil {
 		slog.Error(err.Error())
 		return
 	}
 
-	if err := server.Run(); err != nil {
+	if err := supermock.Run(); err != nil {
 		slog.Error(err.Error())
 		os.Exit(1)
 	}
