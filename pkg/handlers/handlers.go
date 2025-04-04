@@ -182,6 +182,7 @@ func (h *Handlers) Catch(c echo.Context) error {
 			TestID:  response.TestID,
 			Method:  c.Request().Method,
 			Path:    c.Request().URL.Path,
+			Query:   c.Request().URL.RawQuery,
 			Body:    string(body),
 			Headers: map[string]string{},
 		}

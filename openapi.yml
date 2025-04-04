@@ -159,6 +159,8 @@ components:
           type: string
         path:
           type: string
+        query:
+          type: string
         test_id:
           type: string
           format: uuid

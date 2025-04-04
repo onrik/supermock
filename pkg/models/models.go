@@ -3,6 +3,7 @@ package models
 type Request struct {
 	TestID    string            `json:"test_id" openapi:"format=uuid"`
 	Method    string            `json:"method"`
+	Query     string            `json:"query"`
 	Path      string            `json:"path"`
 	Headers   map[string]string `json:"headers"`
 	Body      string            `json:"body"`
@@ -15,7 +16,7 @@ type Response struct {
 	TestID       string            `json:"test_id" validate:"required" openapi:"format=uuid"`
 	Method       string            `json:"method" validate:"required"`
 	Path         string            `json:"path" validate:"required"`
-	Status       uint              `json:"status" validate:"required"`
+	Status       uint16            `json:"status" validate:"required"`
 	Headers      map[string]string `json:"headers"`
 	Body         string            `json:"body"`
 	IsPermanent  bool              `json:"is_permanent"`

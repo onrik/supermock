@@ -1,6 +1,7 @@
 package app
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 	"strconv"
@@ -22,20 +23,20 @@ func (Validator) Validate(i interface{}) error {
 		return err
 	}
 
-	errors := []string{}
+	errs := []string{}
 	for _, err := range validationErrors {
 		key := buildPath(reflect.TypeOf(i).Elem(), prepareNamespace(err.Namespace()))
 		e := fmt.Sprintf("%s=%s", key, err.Tag())
 		if err.Param() != "" {
 			e += "=" + err.Param()
 		}
-		errors = append(errors, e)
+		errs = append(errs, e)
 	}
-	if len(errors) == 0 {
+	if len(errs) == 0 {
 		return nil
 	}
 
-	return fmt.Errorf(strings.Join(errors, ","))
+	return errors.New(strings.Join(errs, ","))
 }
 
 func prepareNamespace(namespace string) []string {

@@ -42,6 +42,7 @@ func New(httpAddr, dbDSN, smtpAddr string) (*Supermock, error) {
 	server.GET("/_responses", h.ResponseList)
 	server.DELETE("/_responses/:uuid", h.DeleteResponse)
 	server.GET("/_requests/:test_id", h.Requests)
+	server.GET("/_requests", h.Requests)
 	server.DELETE("/_tests/:test_id", h.Clean)
 	server.Any("/*", h.Catch)
 

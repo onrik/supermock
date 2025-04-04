@@ -14,6 +14,7 @@ import (
 type Request struct {
 	Method  string            `json:"method"`
 	Path    string            `json:"path"`
+	Query   string            `json:"query"`
 	Headers map[string]string `json:"headers"`
 	Body    string            `json:"body"`
 }
@@ -47,8 +48,7 @@ func New(baseURL string, client *http.Client) *Client {
 	}
 }
 
-// Put response to stack
-func (c *Client) Put(ctx context.Context, r Response) error {
+func (c *Client) putReponse(ctx context.Context, r Response) error {
 	body, err := json.Marshal(r)
 	if err != nil {
 		return err
@@ -68,6 +68,18 @@ func (c *Client) Put(ctx context.Context, r Response) error {
 	defer response.Body.Close()
 	if response.StatusCode >= 400 {
 		return fmt.Errorf("http status: %d", response.StatusCode)
+	}
+
+	return nil
+}
+
+// Put response to stack
+func (c *Client) Put(ctx context.Context, responses ...Response) error {
+	for i := range responses {
+		err := c.putReponse(ctx, responses[i])
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

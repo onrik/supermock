@@ -39,7 +39,10 @@ func initPostgresql(dsn url.URL) (*sql.DB, error) {
 		is_permanent bool NOT NULL,
 		disable_catch bool NOT NULL,
 		created_at TEXT NOT NULL
-	);`)
+	);
+
+	ALTER TABLE requests ADD COLUMN IF NOT EXISTS query TEXT NOT NULL DEFAULT '';
+`)
 
 	return db, err
 }

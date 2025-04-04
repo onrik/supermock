@@ -40,19 +40,26 @@ func (db *DB) Close() {
 }
 
 func (db *DB) Requests(ctx context.Context, testID string) ([]models.Request, error) {
-	requests := []models.Request{}
-	rows, err := db.sql.QueryContext(ctx, "SELECT test_id, method, path, headers, body, created_at FROM requests WHERE test_id = $1", testID)
+	sql := "SELECT test_id, method, path, query, headers, body, created_at FROM requests"
+	args := []any{}
+	if testID != "" {
+		sql += " WHERE test_id = $1"
+		args = append(args, testID)
+	}
+
+	rows, err := db.sql.QueryContext(ctx, sql, args...)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
+	requests := []models.Request{}
 	for rows.Next() {
 		request := models.Request{
 			Headers: map[string]string{},
 		}
 		var headers string
-		err = rows.Scan(&request.TestID, &request.Method, &request.Path, &headers, &request.Body, &request.CreatedAt)
+		err = rows.Scan(&request.TestID, &request.Method, &request.Path, &request.Query, &headers, &request.Body, &request.CreatedAt)
 		if err != nil {
 			return nil, err
 		}
@@ -76,8 +83,8 @@ func (db *DB) SaveRequest(ctx context.Context, request models.Request) error {
 	request.CreatedAt = time.Now().UTC().Format(time.RFC3339)
 
 	_, err = db.sql.Exec(
-		"INSERT INTO requests (test_id, method, path, headers, body, created_at) VALUES ($1, $2, $3, $4, $5, $6)",
-		request.TestID, request.Method, request.Path, string(headers), request.Body, request.CreatedAt)
+		"INSERT INTO requests (test_id, method, path, query, headers, body, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7)",
+		request.TestID, request.Method, request.Path, request.Query, string(headers), request.Body, request.CreatedAt)
 
 	return err
 }

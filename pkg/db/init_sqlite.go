@@ -23,6 +23,7 @@ func initSqlite(dsn url.URL) (*sql.DB, error) {
 		test_id TEXT NOT NULL,
 		method TEXT NOT NULL,
 		path TEXT NOT NULL,
+		query TEXT NOT NULL,
 		headers TEXT NOT NULL,
 		body TEXT NOT NULL,
 		created_at TEXT NOT NULL
@@ -40,7 +41,8 @@ func initSqlite(dsn url.URL) (*sql.DB, error) {
 		is_permanent bool NOT NULL,
 		disable_catch bool NOT NULL,
 		created_at TEXT NOT NULL
-	);`)
+	);
+`)
 
 	return db, err
 }
